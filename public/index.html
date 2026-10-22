@@ -3,34 +3,300 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>發送 LINE 備忘錄</title>
+  <title>Aaron's Dev Hub & LINE Memo</title>
   <style>
-    body { font-family: sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, textarea, button { width: 100%; padding: 10px; box-sizing: border-box; }
-    button { background-color: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; border-radius: 4px; }
-    button:hover { background-color: #05b34c; }
-    #status { margin-top: 15px; font-weight: bold; }
+    :root {
+      --primary-color: #06C755;
+      --primary-hover: #05b34c;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #212529;
+      --text-muted: #6c757d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    /* Header Nav */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e9ecef;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 60px 20px 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .btn-get-started {
+      display: inline-block;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 25px;
+      transition: background 0.2s, transform 0.1s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-get-started:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Showcase Section (測試圖與介紹) */
+    .showcase {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card-img {
+      width: 100%;
+      height: 160px;
+      background-color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 18px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Memo App Section */
+    .memo-section {
+      max-width: 480px;
+      margin: 60px auto;
+      padding: 30px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    .memo-section h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary-color);
+    }
+
+    .btn-send {
+      width: 100%;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-send:hover {
+      background-color: var(--primary-hover);
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
 
-  <h2>發送 LINE 備忘錄</h2>
+  <!-- 頂部導覽列 -->
+  <header>
+    <div class="logo">🚀 Aaron's Space</div>
+    <a href="#memo-tool" class="btn-get-started" style="padding: 6px 16px; font-size: 0.85rem;">快速發送</a>
+  </header>
 
-  <div class="form-group">
-    <label for="password">網頁密碼：</label>
-    <input type="password" id="password" placeholder="請輸入訪問密碼">
-  </div>
+  <!-- Hero 關於我 & Get Started -->
+  <section class="hero">
+    <h1>歡迎來到我的開發空間</h1>
+    <p>這裡是我測試各項 Serverless 服務、自動化工作流與 LINE Bot 整合的實驗場。</p>
+    <a href="#memo-tool" class="btn-get-started">Get Started</a>
+  </section>
 
-  <div class="form-group">
-    <label for="memo">備忘錄內容：</label>
-    <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄..."></textarea>
-  </div>
+  <!-- Showcase 測試圖與功能卡片區 -->
+  <section class="showcase">
+    <h2 class="section-title">專案與功能展示</h2>
+    <div class="grid">
+      
+      <!-- 卡片 1 -->
+      <div class="card">
+        <div class="card-img">
+          <!-- 提示：可替換 src 你的圖片網址 -->
+          <img src="https://via.placeholder.com/400x200?text=LINE+API+Integration" alt="測試圖 1">
+        </div>
+        <div class="card-content">
+          <div class="card-title">LINE 自動化通知</div>
+          <div class="card-desc">結合 Vercel 與 Native Fetch API，實現輕量且快速的訊息廣播功能。</div>
+        </div>
+      </div>
 
-  <button id="sendBtn">發送至 LINE</button>
+      <!-- 卡片 2 -->
+      <div class="card">
+        <div class="card-img">
+          <img src="https://via.placeholder.com/400x200?text=Vercel+Serverless" alt="測試圖 2">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Vercel 雲端部署</div>
+          <div class="card-desc">採用零伺服器架構 (Serverless)，提供全天候穩定的 API 回應。</div>
+        </div>
+      </div>
 
-  <div id="status"></div>
+      <!-- 卡片 3 -->
+      <div class="card">
+        <div class="card-img">
+          <img src="https://via.placeholder.com/400x200?text=Security+%26+Auth" alt="測試圖 3">
+        </div>
+        <div class="card-content">
+          <div class="card-title">安全防護驗證</div>
+          <div class="card-desc">前端密碼防護機制，確保廣播發送權限不被未授權者使用。</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- LINE 備忘錄發送工具區 -->
+  <section id="memo-tool" class="memo-section">
+    <h2>發送 LINE 備忘錄</h2>
+
+    <div class="form-group">
+      <label for="password">訪問密碼：</label>
+      <input type="password" id="password" placeholder="請输入 Web Password">
+    </div>
+
+    <div class="form-group">
+      <label for="memo">備忘錄內容：</label>
+      <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄內容..."></textarea>
+    </div>
+
+    <button id="sendBtn" class="btn-send">發送至 LINE</button>
+
+    <div id="status"></div>
+  </section>
+
+  <footer>
+    &copy; 2026 Aaron. Powered by Vercel & LINE Messaging API.
+  </footer>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -69,7 +335,7 @@
         if (response.ok && data.success) {
           statusDiv.style.color = 'green';
           statusDiv.innerText = data.message || '廣播發送成功！';
-          document.getElementById('memo').value = ''; // 清空內容
+          document.getElementById('memo').value = ''; // 清空輸入框
         } else {
           statusDiv.style.color = 'red';
           statusDiv.innerText = data.error || '發送失敗';
@@ -82,3 +348,4 @@
   </script>
 </body>
 </html>
+
