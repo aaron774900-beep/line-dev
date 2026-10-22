@@ -48,9 +48,12 @@
       statusDiv.innerText = '發送中...';
 
       try {
-        const response = await fetch('/api/send-memo', {
+        const response = await fetch('/api/broadcast', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-password': password
+          },
           body: JSON.stringify({ password, message })
         });
 
@@ -58,17 +61,11 @@
 
         if (response.ok && data.success) {
           statusDiv.style.color = 'green';
-          statusDiv.innerText = data.message;
+          statusDiv.innerText = data.message || '廣播發送成功！';
           document.getElementById('memo').value = ''; // 清空內容
         } else {
           statusDiv.style.color = 'red';
           statusDiv.innerText = data.error || '發送失敗';
         }
       } catch (err) {
-        statusDiv.style.color = 'red';
-        statusDiv.innerText = '連線失敗，請檢查後端服務。';
-      }
-    }
-  </script>
-</body>
-</html>
+
