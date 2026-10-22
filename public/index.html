@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>發送 LINE 備忘錄</title>
+  <style>
+    body { font-family: sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, textarea, button { width: 100%; padding: 10px; box-sizing: border-box; }
+    button { background-color: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; border-radius: 4px; }
+    button:hover { background-color: #05b34c; }
+    #status { margin-top: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h2>發送 LINE 備忘錄</h2>
+
+  <div class="form-group">
+    <label for="password">網頁密碼：</label>
+    <input type="password" id="password" placeholder="請輸入訪問密碼">
+  </div>
+
+  <div class="form-group">
+    <label for="memo">備忘錄內容：</label>
+    <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄..."></textarea>
+  </div>
+
+  <button onclick="sendMemo()">發送至 LINE</button>
+
+  <div id="status"></div>
+
+  <script>
+    async function sendMemo() {
+      const password = document.getElementById('password').value;
+      const message = document.getElementById('memo').value;
+      const statusDiv = document.getElementById('status');
+
+      if (!password || !message) {
+        statusDiv.style.color = 'red';
+        statusDiv.innerText = '請填寫密碼與備忘錄內容！';
+        return;
+      }
+
+      statusDiv.style.color = 'gray';
+      statusDiv.innerText = '發送中...';
+
+      try {
+        const response = await fetch('/api/send-memo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, message })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          statusDiv.style.color = 'green';
+          statusDiv.innerText = data.message;
+          document.getElementById('memo').value = ''; // 清空內容
+        } else {
+          statusDiv.style.color = 'red';
+          statusDiv.innerText = data.error || '發送失敗';
+        }
+      } catch (err) {
+        statusDiv.style.color = 'red';
+        statusDiv.innerText = '連線失敗，請檢查後端服務。';
+      }
+    }
+  </script>
+</body>
+</html>
