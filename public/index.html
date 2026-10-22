@@ -28,11 +28,18 @@
     <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄..."></textarea>
   </div>
 
-  <button onclick="sendMemo()">發送至 LINE</button>
+  <button id="sendBtn">發送至 LINE</button>
 
   <div id="status"></div>
 
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sendBtn = document.getElementById('sendBtn');
+      if (sendBtn) {
+        sendBtn.addEventListener('click', sendMemo);
+      }
+    });
+
     async function sendMemo() {
       const password = document.getElementById('password').value;
       const message = document.getElementById('memo').value;
@@ -68,4 +75,10 @@
           statusDiv.innerText = data.error || '發送失敗';
         }
       } catch (err) {
-
+        statusDiv.style.color = 'red';
+        statusDiv.innerText = '連線失敗，請檢查後端服務。';
+      }
+    }
+  </script>
+</body>
+</html>
