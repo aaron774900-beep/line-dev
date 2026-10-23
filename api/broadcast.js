@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+  // 設定 CORS 跨域標頭
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-username, x-password');
@@ -7,10 +8,13 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // 取得 Vercel KV / Redis 環境變數
   const kvUrl = process.env.KV_REST_API_URL || process.env.STORAGE_REST_API_URL;
   const kvToken = process.env.KV_REST_API_TOKEN || process.env.STORAGE_REST_API_TOKEN;
 
-  // 1. GET 請求：從 Redis 讀取歷史紀錄
+  // =========================================================
+  // 1. GET 請求：讀取雲端歷史紀錄
+  // =========================================================
   if (req.method === 'GET') {
     try {
       if (!kvUrl || !kvToken) {
@@ -20,23 +24,27 @@ export default async function handler(req, res) {
         headers: { Authorization: `Bearer ${kvToken}` }
       });
       const data = await kvRes.json();
-      const history = (data.result || []).map(item => typeof item === 'string' ? JSON.parse(item) : item);
+      const history = (data.result || []).map(item => (typeof item === 'string' ? JSON.parse(item) : item));
       return res.status(200).json({ success: true, history });
     } catch (error) {
       return res.status(500).json({ success: false, error: '無法讀取雲端歷史紀錄', details: error.message });
     }
   }
 
-  // 2. POST 請求：發送 LINE Flex Message 卡片並寫入 Redis
+  // =========================================================
+  // 2. POST 請求：發送 LINE Flex Message 並寫入 Redis
+  // =========================================================
   if (req.method === 'POST') {
-    const { username, password, message } = req.body;
+    const { username, password, message } = req.body || {};
 
+    // 讀取後端環境變數帳密 (預設 fallback: Aaron / 123456)
     const envUser = process.env.ADMIN_USER || 'Aaron';
     const envPass = process.env.ADMIN_PASS || '123456';
 
     const reqUser = username || req.headers['x-username'];
     const reqPass = password || req.headers['x-password'];
 
+    // 身分驗證
     if (reqUser !== envUser || reqPass !== envPass) {
       return res.status(401).json({ success: false, error: '帳號或密碼錯誤！' });
     }
@@ -49,7 +57,9 @@ export default async function handler(req, res) {
     }
 
     try {
-      // 發送 LINE Flex Message 卡片
+      const nowTimeStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+
+      // 呼叫 LINE Messaging API 發送 Flex Message 卡片
       const lineRes = await fetch('https://api.line.me/v2/bot/message/push', {
         method: 'POST',
         headers: {
@@ -61,7 +71,7 @@ export default async function handler(req, res) {
           messages: [
             {
               type: 'flex',
-              altText: '【專屬備忘錄】' + message,
+              altText: '📌 專屬備忘錄通知：' + message,
               contents: {
                 type: 'bubble',
                 header: {
@@ -90,7 +100,7 @@ export default async function handler(req, res) {
                     },
                     {
                       type: 'text',
-                      text: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+                      text: nowTimeStr,
                       size: 'xs',
                       color: '#aaaaaa',
                       margin: 'md'
@@ -108,11 +118,11 @@ export default async function handler(req, res) {
         return res.status(lineRes.status).json({ success: false, error: 'LINE API 發送失敗', details: errorData });
       }
 
-      // 寫入 Redis
+      // 同步寫入 Redis (記錄最新 10 筆)
       if (kvUrl && kvToken) {
         const newEntry = JSON.stringify({
           text: message,
-          time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+          time: nowTimeStr,
           timestamp: Date.now()
         });
 
@@ -125,7 +135,7 @@ export default async function handler(req, res) {
         });
       }
 
-      return res.status(200).json({ success: true, message: '訊息已成功發送並同步至雲端！' });
+      return res.status(200).json({ success: true, message: '備忘錄卡片已成功發送！' });
     } catch (err) {
       return res.status(500).json({ success: false, error: '伺服器內部錯誤', details: err.message });
     }
