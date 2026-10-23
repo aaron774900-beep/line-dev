@@ -7,6 +7,10 @@
   
   <!-- 分頁小圖示 Favicon -->
   <link rel="icon" type="image/jpeg" href="preview.jpeg">
+  <!-- 引入 Markdown 解析器 (marked.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- 引入慶祝彩花特效 (canvas-confetti) -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <style>
     :root {
@@ -197,7 +201,7 @@
     }
 
     .memo-section {
-      max-width: 520px;
+      max-width: 560px;
       margin: 60px auto;
       padding: 30px;
       background: var(--card-bg);
@@ -268,7 +272,7 @@
       text-align: center;
     }
 
-    .tag-container {
+    .tag-container, .template-container {
       display: flex;
       gap: 8px;
       margin-top: 8px;
@@ -291,6 +295,25 @@
       color: white;
     }
 
+    /* Markdown 即時預覽區塊 */
+    .preview-box {
+      margin-top: 8px;
+      padding: 12px;
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      background-color: var(--input-bg);
+      font-size: 0.9rem;
+      min-height: 50px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .preview-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
     .btn-send {
       width: 100%;
       background-color: var(--primary-color);
@@ -302,6 +325,7 @@
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s;
+      margin-top: 10px;
     }
 
     .btn-send:hover {
@@ -381,7 +405,7 @@
 </head>
 <body>
 
-  <!-- 頂部導覽列（使用 preview.jpeg 作為 Logo） -->
+  <!-- 頂部導覽列 -->
   <header>
     <div class="logo">
       <img src="preview.jpeg" alt="Logo">
@@ -404,37 +428,27 @@
   <section class="showcase">
     <h2 class="section-title">專案與功能展示</h2>
     <div class="grid">
-      
       <div class="card">
-        <div class="card-img">
-          <img src="preview.jpeg" alt="LINE 自動化通知">
-        </div>
+        <div class="card-img"><img src="preview.jpeg" alt="LINE 自動化通知"></div>
         <div class="card-content">
           <div class="card-title">LINE 自動化通知</div>
           <div class="card-desc">結合 Vercel 與 Native Fetch API，實現輕量且快速的訊息廣播功能。</div>
         </div>
       </div>
-
       <div class="card">
-        <div class="card-img">
-          <img src="IMG_1920.jpeg" alt="Vercel 雲端部署">
-        </div>
+        <div class="card-img"><img src="IMG_1920.jpeg" alt="Vercel 雲端部署"></div>
         <div class="card-content">
           <div class="card-title">Vercel 雲端部署</div>
           <div class="card-desc">採用零伺服器架構 (Serverless)，提供全天候穩定的 API 回應。</div>
         </div>
       </div>
-
       <div class="card">
-        <div class="card-img">
-          <img src="Screenshot 2026-10-23 094805.png" alt="安全防護驗證">
-        </div>
+        <div class="card-img"><img src="Screenshot 2026-10-23 094805.png" alt="安全防護驗證"></div>
         <div class="card-content">
           <div class="card-title">安全防護驗證</div>
           <div class="card-desc">前端雙重身分驗證與人類驗證，確保發送權限安全。</div>
         </div>
       </div>
-
     </div>
   </section>
 
@@ -442,7 +456,6 @@
   <section id="memo-tool" class="memo-section">
     <h2>發送 LINE 備忘錄</h2>
 
-    <!-- 使用者名稱與密碼欄位 -->
     <div class="form-row">
       <div class="form-group">
         <label for="username">使用者名稱：</label>
@@ -454,7 +467,7 @@
       </div>
     </div>
 
-    <!-- 人類驗證區塊 (Captcha) -->
+    <!-- 人類驗證區塊 -->
     <div class="form-group">
       <label>🛡️ 人類驗證：</label>
       <div class="captcha-box">
@@ -466,9 +479,21 @@
 
     <div class="form-group">
       <label for="memo">備忘錄內容：</label>
-      <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄內容..."></textarea>
+      
+      <!-- 功能 1：一鍵常用範本按鈕 -->
+      <div class="template-container">
+        <button type="button" class="tag-btn" onclick="applyTemplate('【待辦清單】\n- [ ] 專案程式碼檢視\n- [ ] 回覆訊息')">📋 待辦範本</button>
+        <button type="button" class="tag-btn" onclick="applyTemplate('【伺服器巡檢】\n狀態：🟢 正常運行\n負載：低')">⚡ 巡檢範本</button>
+        <button type="button" class="tag-btn" onclick="applyTemplate('【靈感筆記】\n想法摘要：')">💡 靈感範本</button>
+      </div>
 
-      <div class="tag-container">
+      <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄內容（支援 Markdown 語法）..." oninput="updatePreview()"></textarea>
+
+      <!-- 功能 2：Markdown 即時預覽 -->
+      <div class="preview-title">👁️ Markdown 即時預覽：</div>
+      <div id="markdownPreview" class="preview-box" style="color: var(--text-muted);">（即時預覽將顯示於此...）</div>
+
+      <div class="tag-container" style="margin-top: 10px;">
         <button type="button" class="tag-btn" onclick="addTag('【靈感】')">💡 靈感</button>
         <button type="button" class="tag-btn" onclick="addTag('【待辦】')">✅ 待辦</button>
         <button type="button" class="tag-btn" onclick="addTag('【重要】')">🔥 重要</button>
@@ -547,6 +572,54 @@
         memoInput.value = tagText + ' ' + memoInput.value;
       }
       memoInput.focus();
+      updatePreview();
+    }
+
+    function applyTemplate(templateText) {
+      const memoInput = document.getElementById('memo');
+      memoInput.value = templateText;
+      memoInput.focus();
+      updatePreview();
+    }
+
+    /* Markdown 即時預覽更新 */
+    function updatePreview() {
+      const content = document.getElementById('memo').value;
+      const previewBox = document.getElementById('markdownPreview');
+      if (!content.trim()) {
+        previewBox.innerHTML = '<span style="color: var(--text-muted);">（即時預覽將顯示於此...）</span>';
+        return;
+      }
+      previewBox.innerHTML = marked.parse(content);
+    }
+
+    /* 播放成功短音效 (透過 Web Audio API) */
+    function playSuccessSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.3);
+      } catch (e) {
+        // 忽略音效不支援的瀏覽器環境
+      }
+    }
+
+    /* 慶祝彩花特效 */
+    function triggerConfetti() {
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.8 }
+      });
     }
 
     async function sendMemo() {
@@ -588,8 +661,14 @@
         if (response.ok && data.success) {
           statusDiv.style.color = 'green';
           statusDiv.innerText = data.message || '發送成功！';
+          
+          // 觸發音效、彩花動畫與歷史紀錄
+          playSuccessSound();
+          triggerConfetti();
           saveToHistory(message);
+
           document.getElementById('memo').value = '';
+          updatePreview();
           generateCaptcha();
         } else {
           statusDiv.style.color = 'red';
