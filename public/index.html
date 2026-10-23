@@ -216,6 +216,15 @@
       margin-bottom: 18px;
     }
 
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
     label {
       display: block;
       margin-bottom: 6px;
@@ -237,6 +246,26 @@
 
     input:focus, textarea:focus {
       border-color: var(--primary-color);
+    }
+
+    .captcha-box {
+      background: var(--tag-bg);
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .captcha-box span {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .captcha-box input {
+      width: 100px;
+      text-align: center;
     }
 
     .tag-container {
@@ -285,7 +314,6 @@
       text-align: center;
     }
 
-    /* 歷史紀錄區塊 */
     .history-section {
       margin-top: 30px;
       border-top: 1px solid var(--border-color);
@@ -353,10 +381,10 @@
 </head>
 <body>
 
-  <!-- 頂部導覽列 -->
+  <!-- 頂部導覽列（使用 preview.jpeg 作為 Logo） -->
   <header>
     <div class="logo">
-      <img src="IMG_1917.jpeg" alt="Logo">
+      <img src="preview.jpeg" alt="Logo">
       Aaron's Space
     </div>
     <div class="nav-actions">
@@ -377,10 +405,9 @@
     <h2 class="section-title">專案與功能展示</h2>
     <div class="grid">
       
-      <!-- 卡片 1 -->
       <div class="card">
         <div class="card-img">
-          <img src="IMG_1917.jpeg" alt="LINE 自動化通知">
+          <img src="preview.jpeg" alt="LINE 自動化通知">
         </div>
         <div class="card-content">
           <div class="card-title">LINE 自動化通知</div>
@@ -388,7 +415,6 @@
         </div>
       </div>
 
-      <!-- 卡片 2 -->
       <div class="card">
         <div class="card-img">
           <img src="IMG_1920.jpeg" alt="Vercel 雲端部署">
@@ -399,14 +425,13 @@
         </div>
       </div>
 
-      <!-- 卡片 3 -->
       <div class="card">
         <div class="card-img">
           <img src="Screenshot 2026-10-23 094805.png" alt="安全防護驗證">
         </div>
         <div class="card-content">
           <div class="card-title">安全防護驗證</div>
-          <div class="card-desc">前端密碼防護機制，確保廣播發送權限不被未授權者使用。</div>
+          <div class="card-desc">前端雙重身分驗證與人類驗證，確保發送權限安全。</div>
         </div>
       </div>
 
@@ -417,16 +442,32 @@
   <section id="memo-tool" class="memo-section">
     <h2>發送 LINE 備忘錄</h2>
 
+    <!-- 使用者名稱與密碼欄位 -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="username">使用者名稱：</label>
+        <input type="text" id="username" placeholder="請輸入 Username" value="Aaron">
+      </div>
+      <div class="form-group">
+        <label for="password">訪問密碼：</label>
+        <input type="password" id="password" placeholder="請輸入 Password">
+      </div>
+    </div>
+
+    <!-- 人類驗證區塊 (Captcha) -->
     <div class="form-group">
-      <label for="password">訪問密碼：</label>
-      <input type="password" id="password" placeholder="請輸入 Web Password">
+      <label>🛡️ 人類驗證：</label>
+      <div class="captcha-box">
+        <span id="captchaQuestion">? + ? = ?</span>
+        <input type="number" id="captchaAnswer" placeholder="答案">
+        <button type="button" class="tag-btn" onclick="generateCaptcha()">🔄 換題</button>
+      </div>
     </div>
 
     <div class="form-group">
       <label for="memo">備忘錄內容：</label>
       <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄內容..."></textarea>
 
-      <!-- 功能 2：快速快捷標籤 -->
       <div class="tag-container">
         <button type="button" class="tag-btn" onclick="addTag('【靈感】')">💡 靈感</button>
         <button type="button" class="tag-btn" onclick="addTag('【待辦】')">✅ 待辦</button>
@@ -439,15 +480,12 @@
 
     <div id="status"></div>
 
-    <!-- 功能 3：發送歷史紀錄 -->
     <div class="history-section">
       <div class="history-header">
         <h3>📜 本地發送歷史</h3>
         <button class="btn-clear-history" onclick="clearHistory()">清除紀錄</button>
       </div>
-      <ul id="historyList" class="history-list">
-        <!-- 動態渲染歷史紀錄 -->
-      </ul>
+      <ul id="historyList" class="history-list"></ul>
     </div>
   </section>
 
@@ -456,11 +494,12 @@
   </footer>
 
   <script>
+    let num1, num2, correctAnswer;
+
     document.addEventListener('DOMContentLoaded', () => {
-      // 載入主題
       initTheme();
-      // 載入發送歷史紀錄
       loadHistory();
+      generateCaptcha();
 
       const sendBtn = document.getElementById('sendBtn');
       if (sendBtn) {
@@ -473,7 +512,14 @@
       }
     });
 
-    /* --- 功能 1：暗色模式切換 --- */
+    function generateCaptcha() {
+      num1 = Math.floor(Math.random() * 10) + 1;
+      num2 = Math.floor(Math.random() * 10) + 1;
+      correctAnswer = num1 + num2;
+      document.getElementById('captchaQuestion').innerText = `請計算：${num1} + ${num2} =`;
+      document.getElementById('captchaAnswer').value = '';
+    }
+
     function initTheme() {
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-theme', savedTheme);
@@ -495,7 +541,6 @@
       }
     }
 
-    /* --- 功能 2：快捷標籤 --- */
     function addTag(tagText) {
       const memoInput = document.getElementById('memo');
       if (!memoInput.value.startsWith(tagText)) {
@@ -504,15 +549,23 @@
       memoInput.focus();
     }
 
-    /* --- 發送備忘錄主邏輯 --- */
     async function sendMemo() {
+      const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
+      const userAnswer = parseInt(document.getElementById('captchaAnswer').value, 10);
       const message = document.getElementById('memo').value;
       const statusDiv = document.getElementById('status');
 
-      if (!password || !message) {
+      if (!username || !password || !message) {
         statusDiv.style.color = 'red';
-        statusDiv.innerText = '請填寫密碼與備忘錄內容！';
+        statusDiv.innerText = '請完整填寫使用者名稱、密碼與備忘錄內容！';
+        return;
+      }
+
+      if (userAnswer !== correctAnswer) {
+        statusDiv.style.color = 'red';
+        statusDiv.innerText = '人類驗證答案錯誤，請重新計算！';
+        generateCaptcha();
         return;
       }
 
@@ -524,24 +577,23 @@
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
+            'x-username': username,
             'x-password': password
           },
-          body: JSON.stringify({ password, message })
+          body: JSON.stringify({ username, password, message })
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
           statusDiv.style.color = 'green';
-          statusDiv.innerText = data.message || '廣播發送成功！';
-          
-          // 成功後，儲存歷史紀錄
+          statusDiv.innerText = data.message || '發送成功！';
           saveToHistory(message);
-
-          document.getElementById('memo').value = ''; // 清空輸入框
+          document.getElementById('memo').value = '';
+          generateCaptcha();
         } else {
           statusDiv.style.color = 'red';
-          statusDiv.innerText = data.error || '發送失敗';
+          statusDiv.innerText = data.error || '驗證失敗，請檢查使用者名稱與密碼！';
         }
       } catch (err) {
         statusDiv.style.color = 'red';
@@ -549,14 +601,12 @@
       }
     }
 
-    /* --- 功能 3：LocalStorage 歷史紀錄 --- */
     function saveToHistory(text) {
       let history = JSON.parse(localStorage.getItem('memo_history') || '[]');
       const newEntry = {
         text: text,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      // 最多保留最新 10 則
       history.unshift(newEntry);
       if (history.length > 10) history.pop();
 
