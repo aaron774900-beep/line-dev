@@ -5,34 +5,26 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// 設定靜態檔案資料夾（前端網頁放在 public 資料夾下）
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 密碼保護驗證中介軟體
+// 帳號與密碼雙重驗證中介軟體
 const checkAuth = (req, res, next) => {
+    const username = req.headers['x-username'] || req.body.username;
     const password = req.headers['x-password'] || req.body.password;
-    if (password === process.env.WEB_PASSWORD) {
+
+    const validUser = process.env.WEB_USERNAME || 'Aaron'; // 可在 Vercel 設定 WEB_USERNAME，預設 Aaron
+    const validPass = process.env.WEB_PASSWORD;
+
+    if (username === validUser && password === validPass) {
         next();
     } else {
-        res.status(401).json({ error: '密碼錯誤或未授權' });
+        res.status(401).json({ error: '帳號或密碼錯誤！' });
     }
 };
 
-// 驗證密碼 API
-app.post('/api/login', (req, res) => {
-    const { password } = req.body;
-    if (password === process.env.WEB_PASSWORD) {
-        res.json({ success: true });
-    } else {
-        res.status(401).json({ success: false, error: '密碼錯誤' });
-    }
-});
-
-// 發送 LINE 指定單一用戶訊息 API (Push Message)
+// 發送 LINE 1 對 1 Push Message API
 app.post('/api/broadcast', checkAuth, async (req, res) => {
     const { message } = req.body;
 
@@ -42,13 +34,12 @@ app.post('/api/broadcast', checkAuth, async (req, res) => {
 
     try {
         const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-        const userId = process.env.LINE_USER_ID; // 從 Vercel 環境變數讀取 User ID
+        const userId = process.env.LINE_USER_ID;
 
         if (!userId) {
             return res.status(500).json({ error: '未設定 LINE_USER_ID 環境變數' });
         }
 
-        // 發送 Push Message 給個人
         const response = await fetch('https://api.line.me/v2/bot/message/push', {
             method: 'POST',
             headers: {
@@ -57,12 +48,7 @@ app.post('/api/broadcast', checkAuth, async (req, res) => {
             },
             body: JSON.stringify({
                 to: userId,
-                messages: [
-                    {
-                        type: 'text',
-                        text: message
-                    }
-                ]
+                messages: [{ type: 'text', text: message }]
             })
         });
 
