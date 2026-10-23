@@ -4,12 +4,26 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/cron-weather.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/cron-weather",
+      "dest": "api/cron-weather.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "server.js"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron-weather",
+      "schedule": "0 0 * * *"
     }
   ]
 }
