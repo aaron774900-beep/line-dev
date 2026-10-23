@@ -103,7 +103,7 @@
 
     .hero {
       text-align: center;
-      padding: 60px 20px 40px;
+      padding: 60px 20px 30px;
       max-width: 800px;
       margin: 0 auto;
     }
@@ -136,6 +136,21 @@
     .btn-get-started:hover {
       background-color: var(--primary-hover);
       transform: translateY(-2px);
+    }
+
+    /* 三峽天氣小卡 */
+    .weather-widget {
+      max-width: 420px;
+      margin: 0 auto 30px;
+      padding: 15px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: background-color 0.3s, border-color 0.3s;
     }
 
     .showcase {
@@ -421,6 +436,19 @@
   <section class="hero">
     <h1>歡迎來到我的line自動化程序主頁</h1>
     <p>這裡是我測試各項 Serverless 服務、自動化工作流與 LINE Bot 整合的實驗場。</p>
+    
+    <!-- 三峽即時天氣小卡 -->
+    <div class="weather-widget" id="weatherWidget">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.8rem;" id="weatherIcon">⛅</span>
+        <div style="text-align: left;">
+          <div style="font-weight: bold; font-size: 0.95rem;">三峽即時天氣 (Sanxia)</div>
+          <div id="weatherDesc" style="font-size: 0.85rem; color: var(--text-muted);">載入中...</div>
+        </div>
+      </div>
+      <div id="weatherTemp" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">--°C</div>
+    </div>
+
     <a href="#memo-tool" class="btn-get-started">Get Started</a>
   </section>
 
@@ -480,7 +508,7 @@
     <div class="form-group">
       <label for="memo">備忘錄內容：</label>
       
-      <!-- 功能 1：一鍵常用範本按鈕 -->
+      <!-- 一鍵常用範本按鈕 -->
       <div class="template-container">
         <button type="button" class="tag-btn" onclick="applyTemplate('【待辦清單】\n- [ ] 專案程式碼檢視\n- [ ] 回覆訊息')">📋 待辦範本</button>
         <button type="button" class="tag-btn" onclick="applyTemplate('【伺服器巡檢】\n狀態：🟢 正常運行\n負載：低')">⚡ 巡檢範本</button>
@@ -489,7 +517,7 @@
 
       <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄內容（支援 Markdown 語法）..." oninput="updatePreview()"></textarea>
 
-      <!-- 功能 2：Markdown 即時預覽 -->
+      <!-- Markdown 即時預覽 -->
       <div class="preview-title">👁️ Markdown 即時預覽：</div>
       <div id="markdownPreview" class="preview-box" style="color: var(--text-muted);">（即時預覽將顯示於此...）</div>
 
@@ -525,6 +553,7 @@
       initTheme();
       loadHistory();
       generateCaptcha();
+      loadWeather(); // 載入三峽即時天氣
 
       const sendBtn = document.getElementById('sendBtn');
       if (sendBtn) {
@@ -536,6 +565,31 @@
         themeToggle.addEventListener('click', toggleTheme);
       }
     });
+
+    /* 自動抓取三峽即時氣溫資訊 */
+    async function loadWeather() {
+      try {
+        const res = await fetch('https://wttr.in/Sanxia?format=j1');
+        const data = await res.json();
+        const current = data.current_condition[0];
+        
+        const temp = current.temp_C;
+        const desc = current.weatherDesc[0].value;
+        
+        document.getElementById('weatherTemp').innerText = `${temp}°C`;
+        document.getElementById('weatherDesc').innerText = desc;
+        
+        if (desc.toLowerCase().includes('sun') || desc.toLowerCase().includes('clear')) {
+          document.getElementById('weatherIcon').innerText = '☀️';
+        } else if (desc.toLowerCase().includes('rain')) {
+          document.getElementById('weatherIcon').innerText = '🌧️';
+        } else {
+          document.getElementById('weatherIcon').innerText = '⛅';
+        }
+      } catch (e) {
+        document.getElementById('weatherDesc').innerText = '無法取得天氣資訊';
+      }
+    }
 
     function generateCaptcha() {
       num1 = Math.floor(Math.random() * 10) + 1;
@@ -582,7 +636,6 @@
       updatePreview();
     }
 
-    /* Markdown 即時預覽更新 */
     function updatePreview() {
       const content = document.getElementById('memo').value;
       const previewBox = document.getElementById('markdownPreview');
@@ -593,27 +646,23 @@
       previewBox.innerHTML = marked.parse(content);
     }
 
-    /* 播放成功短音效 (透過 Web Audio API) */
     function playSuccessSound() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+        oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.3);
-      } catch (e) {
-        // 忽略音效不支援的瀏覽器環境
-      }
+      } catch (e) {}
     }
 
-    /* 慶祝彩花特效 */
     function triggerConfetti() {
       confetti({
         particleCount: 80,
@@ -662,7 +711,6 @@
           statusDiv.style.color = 'green';
           statusDiv.innerText = data.message || '發送成功！';
           
-          // 觸發音效、彩花動畫與歷史紀錄
           playSuccessSound();
           triggerConfetti();
           saveToHistory(message);
