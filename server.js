@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 密碼保護驗證中介軟體
 const checkAuth = (req, res, next) => {
-    const password = req.headers['x-password'] || req.query.password;
+    const password = req.headers['x-password'] || req.body.password;
     if (password === process.env.WEB_PASSWORD) {
         next();
     } else {
@@ -22,7 +22,7 @@ const checkAuth = (req, res, next) => {
     }
 };
 
-// 驗證密碼是否正確的 API
+// 驗證密碼 API
 app.post('/api/login', (req, res) => {
     const { password } = req.body;
     if (password === process.env.WEB_PASSWORD) {
@@ -32,7 +32,7 @@ app.post('/api/login', (req, res) => {
     }
 });
 
-// 發送 LINE 廣播訊息 API (使用原生 fetch，不需安裝 bot-sdk)
+// 發送 LINE 指定單一用戶訊息 API (Push Message)
 app.post('/api/broadcast', checkAuth, async (req, res) => {
     const { message } = req.body;
 
@@ -42,14 +42,21 @@ app.post('/api/broadcast', checkAuth, async (req, res) => {
 
     try {
         const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-        
-        const response = await fetch('https://api.line.me/v2/bot/message/broadcast', {
+        const userId = process.env.LINE_USER_ID; // 從 Vercel 環境變數讀取 User ID
+
+        if (!userId) {
+            return res.status(500).json({ error: '未設定 LINE_USER_ID 環境變數' });
+        }
+
+        // 發送 Push Message 給個人
+        const response = await fetch('https://api.line.me/v2/bot/message/push', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
+                to: userId,
                 messages: [
                     {
                         type: 'text',
@@ -64,9 +71,9 @@ app.post('/api/broadcast', checkAuth, async (req, res) => {
             throw new Error(`LINE API 錯誤: ${response.status} - ${errorData}`);
         }
 
-        res.json({ success: true, message: '廣播發送成功！' });
+        res.json({ success: true, message: '訊息已成功發送到你的 LINE！' });
     } catch (error) {
-        console.error('發送廣播失敗:', error);
+        console.error('發送失敗:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -74,4 +81,3 @@ app.post('/api/broadcast', checkAuth, async (req, res) => {
 app.listen(PORT, () => {
     console.log(`伺服器運行中，連接埠: ${PORT}`);
 });
-
