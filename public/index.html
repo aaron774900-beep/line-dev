@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aaron's Dev Hub & LINE Memo</title>
+  
+  <!-- 分頁小圖示 Favicon -->
   <link rel="icon" type="image/jpeg" href="preview.jpeg">
+
   <style>
     :root {
       --primary-color: #06C755;
@@ -13,6 +16,21 @@
       --card-bg: #ffffff;
       --text-color: #212529;
       --text-muted: #6c757d;
+      --border-color: #e9ecef;
+      --input-bg: #ffffff;
+      --tag-bg: #e9ecef;
+      --tag-text: #495057;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --text-color: #f8f9fa;
+      --text-muted: #a0a0a0;
+      --border-color: #333333;
+      --input-bg: #2a2a2a;
+      --tag-bg: #333333;
+      --tag-text: #e0e0e0;
     }
 
     * {
@@ -26,12 +44,12 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    /* Header Nav */
     header {
-      background: #ffffff;
-      border-bottom: 1px solid #e9ecef;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
       padding: 15px 30px;
       display: flex;
       justify-content: space-between;
@@ -39,15 +57,46 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      transition: background-color 0.3s, border-color 0.3s;
     }
 
     .logo {
       font-size: 1.2rem;
       font-weight: bold;
       color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    /* Hero Section */
+    .logo img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle-btn:hover {
+      background-color: var(--tag-bg);
+    }
+
     .hero {
       text-align: center;
       padding: 60px 20px 40px;
@@ -56,7 +105,7 @@
     }
 
     .hero h1 {
-      font-size: 2.5rem;
+      font-size: 2.2rem;
       margin-bottom: 15px;
     }
 
@@ -70,8 +119,8 @@
       display: inline-block;
       background-color: var(--primary-color);
       color: white;
-      padding: 12px 28px;
-      font-size: 1rem;
+      padding: 10px 24px;
+      font-size: 0.95rem;
       font-weight: bold;
       text-decoration: none;
       border-radius: 25px;
@@ -85,7 +134,6 @@
       transform: translateY(-2px);
     }
 
-    /* Showcase Section (測試圖與介紹) */
     .showcase {
       max-width: 900px;
       margin: 40px auto;
@@ -109,7 +157,8 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      transition: transform 0.2s;
+      transition: transform 0.2s, background-color 0.3s;
+      border: 1px solid var(--border-color);
     }
 
     .card:hover {
@@ -118,13 +167,12 @@
 
     .card-img {
       width: 100%;
-      height: 160px;
-      background-color: #e2e8f0;
+      height: 180px;
+      background-color: var(--tag-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
+      overflow: hidden;
     }
 
     .card-img img {
@@ -148,14 +196,15 @@
       color: var(--text-muted);
     }
 
-    /* Memo App Section */
     .memo-section {
-      max-width: 480px;
+      max-width: 520px;
       margin: 60px auto;
       padding: 30px;
       background: var(--card-bg);
       border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+      transition: background-color 0.3s, border-color 0.3s;
     }
 
     .memo-section h2 {
@@ -177,15 +226,40 @@
     input, textarea {
       width: 100%;
       padding: 12px;
-      border: 1px solid #ced4da;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       font-size: 1rem;
+      background-color: var(--input-bg);
+      color: var(--text-color);
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background-color 0.3s;
     }
 
     input:focus, textarea:focus {
       border-color: var(--primary-color);
+    }
+
+    .tag-container {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag-btn {
+      background-color: var(--tag-bg);
+      color: var(--tag-text);
+      border: none;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tag-btn:hover {
+      background-color: var(--primary-color);
+      color: white;
     }
 
     .btn-send {
@@ -211,6 +285,64 @@
       text-align: center;
     }
 
+    /* 歷史紀錄區塊 */
+    .history-section {
+      margin-top: 30px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 20px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .history-header h3 {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .btn-clear-history {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .history-list {
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.88rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-text {
+      word-break: break-all;
+    }
+
+    .history-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
     footer {
       text-align: center;
       padding: 30px;
@@ -223,21 +355,24 @@
 
   <!-- 頂部導覽列 -->
   <header>
-    <div class="logo" style="display: flex; align-items: center; gap: 8px;">
-      <img src="preview.jpeg" alt="Logo" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+    <div class="logo">
+      <img src="IMG_1917.jpeg" alt="Logo">
       Aaron's Space
     </div>
-    <a href="#memo-tool" class="btn-get-started" style="padding: 6px 16px; font-size: 0.85rem;">快速發送</a>
+    <div class="nav-actions">
+      <button id="themeToggle" class="theme-toggle-btn">🌙 切換深色模式</button>
+      <a href="#memo-tool" class="btn-get-started">快速發送</a>
+    </div>
   </header>
 
-  <!-- Hero 關於我 & Get Started -->
+  <!-- Hero 區塊 -->
   <section class="hero">
     <h1>歡迎來到我的line自動化程序主頁</h1>
     <p>這裡是我測試各項 Serverless 服務、自動化工作流與 LINE Bot 整合的實驗場。</p>
     <a href="#memo-tool" class="btn-get-started">Get Started</a>
   </section>
 
-  <!-- Showcase 測試圖與功能卡片區 -->
+  <!-- Showcase 專案展演區 -->
   <section class="showcase">
     <h2 class="section-title">專案與功能展示</h2>
     <div class="grid">
@@ -245,8 +380,7 @@
       <!-- 卡片 1 -->
       <div class="card">
         <div class="card-img">
-          <!-- 提示：可替換 src 你的圖片網址 -->
-          <img src="IMG_1917.jpeg" alt="測試圖 1">
+          <img src="IMG_1917.jpeg" alt="LINE 自動化通知">
         </div>
         <div class="card-content">
           <div class="card-title">LINE 自動化通知</div>
@@ -257,7 +391,7 @@
       <!-- 卡片 2 -->
       <div class="card">
         <div class="card-img">
-          <img src="IMG_1920.jpeg" alt="測試圖 2">
+          <img src="IMG_1920.jpeg" alt="Vercel 雲端部署">
         </div>
         <div class="card-content">
           <div class="card-title">Vercel 雲端部署</div>
@@ -268,7 +402,7 @@
       <!-- 卡片 3 -->
       <div class="card">
         <div class="card-img">
-          <img src="Screenshot 2026-10-23 094805.png" alt="測試圖 3">
+          <img src="Screenshot 2026-10-23 094805.png" alt="安全防護驗證">
         </div>
         <div class="card-content">
           <div class="card-title">安全防護驗證</div>
@@ -279,23 +413,42 @@
     </div>
   </section>
 
-  <!-- LINE 備忘錄發送工具區 -->
+  <!-- LINE 備忘錄發送區 -->
   <section id="memo-tool" class="memo-section">
     <h2>發送 LINE 備忘錄</h2>
 
     <div class="form-group">
       <label for="password">訪問密碼：</label>
-      <input type="password" id="password" placeholder="請输入 Web Password">
+      <input type="password" id="password" placeholder="請輸入 Web Password">
     </div>
 
     <div class="form-group">
       <label for="memo">備忘錄內容：</label>
       <textarea id="memo" rows="4" placeholder="輸入要發送的備忘錄內容..."></textarea>
+
+      <!-- 功能 2：快速快捷標籤 -->
+      <div class="tag-container">
+        <button type="button" class="tag-btn" onclick="addTag('【靈感】')">💡 靈感</button>
+        <button type="button" class="tag-btn" onclick="addTag('【待辦】')">✅ 待辦</button>
+        <button type="button" class="tag-btn" onclick="addTag('【重要】')">🔥 重要</button>
+        <button type="button" class="tag-btn" onclick="addTag('【連結】')">🔗 連結</button>
+      </div>
     </div>
 
     <button id="sendBtn" class="btn-send">發送至 LINE</button>
 
     <div id="status"></div>
+
+    <!-- 功能 3：發送歷史紀錄 -->
+    <div class="history-section">
+      <div class="history-header">
+        <h3>📜 本地發送歷史</h3>
+        <button class="btn-clear-history" onclick="clearHistory()">清除紀錄</button>
+      </div>
+      <ul id="historyList" class="history-list">
+        <!-- 動態渲染歷史紀錄 -->
+      </ul>
+    </div>
   </section>
 
   <footer>
@@ -304,12 +457,54 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // 載入主題
+      initTheme();
+      // 載入發送歷史紀錄
+      loadHistory();
+
       const sendBtn = document.getElementById('sendBtn');
       if (sendBtn) {
         sendBtn.addEventListener('click', sendMemo);
       }
+
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+      }
     });
 
+    /* --- 功能 1：暗色模式切換 --- */
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeBtnText(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeBtnText(newTheme);
+    }
+
+    function updateThemeBtnText(theme) {
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        themeToggle.innerText = theme === 'dark' ? '☀️ 切換亮色模式' : '🌙 切換深色模式';
+      }
+    }
+
+    /* --- 功能 2：快捷標籤 --- */
+    function addTag(tagText) {
+      const memoInput = document.getElementById('memo');
+      if (!memoInput.value.startsWith(tagText)) {
+        memoInput.value = tagText + ' ' + memoInput.value;
+      }
+      memoInput.focus();
+    }
+
+    /* --- 發送備忘錄主邏輯 --- */
     async function sendMemo() {
       const password = document.getElementById('password').value;
       const message = document.getElementById('memo').value;
@@ -339,6 +534,10 @@
         if (response.ok && data.success) {
           statusDiv.style.color = 'green';
           statusDiv.innerText = data.message || '廣播發送成功！';
+          
+          // 成功後，儲存歷史紀錄
+          saveToHistory(message);
+
           document.getElementById('memo').value = ''; // 清空輸入框
         } else {
           statusDiv.style.color = 'red';
@@ -349,7 +548,47 @@
         statusDiv.innerText = '連線失敗，請檢查後端服務。';
       }
     }
+
+    /* --- 功能 3：LocalStorage 歷史紀錄 --- */
+    function saveToHistory(text) {
+      let history = JSON.parse(localStorage.getItem('memo_history') || '[]');
+      const newEntry = {
+        text: text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      // 最多保留最新 10 則
+      history.unshift(newEntry);
+      if (history.length > 10) history.pop();
+
+      localStorage.setItem('memo_history', JSON.stringify(history));
+      loadHistory();
+    }
+
+    function loadHistory() {
+      const historyList = document.getElementById('historyList');
+      const history = JSON.parse(localStorage.getItem('memo_history') || '[]');
+
+      if (history.length === 0) {
+        historyList.innerHTML = '<li class="history-item" style="color: var(--text-muted);">尚無發送紀錄</li>';
+        return;
+      }
+
+      historyList.innerHTML = history.map(item => `
+        <li class="history-item">
+          <span class="history-text">${escapeHtml(item.text)}</span>
+          <span class="history-time">${item.time}</span>
+        </li>
+      `).join('');
+    }
+
+    function clearHistory() {
+      localStorage.removeItem('memo_history');
+      loadHistory();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
   </script>
 </body>
 </html>
-
