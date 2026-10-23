@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const startTime = Date.now();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -14,7 +15,7 @@ const checkAuth = (req, res, next) => {
     const username = req.headers['x-username'] || req.body.username;
     const password = req.headers['x-password'] || req.body.password;
 
-    const validUser = process.env.WEB_USERNAME || 'Aaron'; // 可在 Vercel 設定 WEB_USERNAME，預設 Aaron
+    const validUser = process.env.WEB_USERNAME || 'Aaron';
     const validPass = process.env.WEB_PASSWORD;
 
     if (username === validUser && password === validPass) {
@@ -64,6 +65,24 @@ app.post('/api/broadcast', checkAuth, async (req, res) => {
     }
 });
 
+// 管理員專屬：取得系統狀態與環境變數檢查
+app.post('/api/admin/status', checkAuth, (req, res) => {
+    const uptime = Math.floor((Date.now() - startTime) / 1000);
+    
+    res.json({
+        success: true,
+        data: {
+            nodeEnv: process.env.NODE_ENV || 'development',
+            uptimeSeconds: uptime,
+            hasLineToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+            hasLineUserId: !!process.env.LINE_USER_ID,
+            hasWebPassword: !!process.env.WEB_PASSWORD,
+            serverTime: new Date().toISOString()
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`伺服器運行中，連接埠: ${PORT}`);
 });
+
