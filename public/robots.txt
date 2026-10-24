@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://line-dev-6666-one.vercel.app/sitemap.xml
