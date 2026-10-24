@@ -74,15 +74,18 @@ export default async function handler(req, res) {
               altText: '📌 專屬備忘錄通知：' + message,
               contents: {
                 type: 'bubble',
+                size: 'mega',
                 header: {
                   type: 'box',
                   layout: 'vertical',
+                  backgroundColor: '#27272A',
+                  paddingAll: '15px',
                   contents: [
                     {
                       type: 'text',
                       text: '📌 專屬備忘錄通知',
                       weight: 'bold',
-                      color: '#1DB446',
+                      color: '#10B981',
                       size: 'sm'
                     }
                   ]
@@ -90,19 +93,21 @@ export default async function handler(req, res) {
                 body: {
                   type: 'box',
                   layout: 'vertical',
+                  backgroundColor: '#18181B',
+                  paddingAll: '15px',
                   contents: [
                     {
                       type: 'text',
                       text: message,
                       wrap: true,
-                      size: 'md',
-                      weight: 'regular'
+                      color: '#FFFFFF',
+                      size: 'md'
                     },
                     {
                       type: 'text',
                       text: nowTimeStr,
                       size: 'xs',
-                      color: '#aaaaaa',
+                      color: '#71717A',
                       margin: 'md'
                     }
                   ]
